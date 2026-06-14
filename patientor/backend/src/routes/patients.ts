@@ -1,4 +1,5 @@
 import express from 'express';
+import { z } from 'zod';
 import patientService from '../services/patientService.ts';
 import toNewPatient from '../utils.ts';
 
@@ -13,8 +14,11 @@ router.post('/', (req, res) => {
     const newPatient = toNewPatient(req.body);
     res.json(patientService.addPatient(newPatient));
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Unknown error';
-    res.status(400).send(message);
+    if (error instanceof z.ZodError) {
+      res.status(400).send(z.prettifyError(error));
+    } else {
+      res.status(400).send('Unknown error');
+    }
   }
 });
 
