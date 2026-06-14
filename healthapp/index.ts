@@ -26,12 +26,23 @@ app.get('/bmi', (req, res) => {
 
 app.post('/exercises', (req, res) => {
   const { daily_exercises, target } = req.body as {
-    daily_exercises: number[];
-    target: number;
+    daily_exercises?: unknown;
+    target?: unknown;
   };
 
-  const result = calculateExercises(daily_exercises, target);
-  res.json(result);
+  if (daily_exercises === undefined || target === undefined) {
+    return res.status(400).json({ error: 'parameters missing' });
+  }
+
+  if (
+    !Array.isArray(daily_exercises) ||
+    daily_exercises.some((v) => typeof v !== 'number') ||
+    typeof target !== 'number'
+  ) {
+    return res.status(400).json({ error: 'malformatted parameters' });
+  }
+
+  return res.json(calculateExercises(daily_exercises as number[], target));
 });
 
 const PORT = 3000;
