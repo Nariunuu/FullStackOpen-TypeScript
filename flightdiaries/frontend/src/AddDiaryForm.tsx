@@ -54,29 +54,35 @@ const AddDiaryForm = ({ onAdded }: { onAdded: (entry: DiaryEntry) => void }) => 
       <h2>Add new entry</h2>
       {error && <p style={{ color: 'red' }}>Error: {error}</p>}
       <div>
-        date <input value={date} onChange={e => setDate(e.target.value)} />
+        date <input type="date" value={date} onChange={e => setDate(e.target.value)} />
       </div>
       <div>
         visibility{' '}
-        <select
-          value={visibility}
-          onChange={e => isVisibility(e.target.value) && setVisibility(e.target.value)}
-        >
-          {Object.values(Visibility).map(v => (
-            <option key={v} value={v}>{v}</option>
-          ))}
-        </select>
+        {Object.values(Visibility).map(v => (
+          <label key={v}>
+            {v}{' '}
+            <input
+              type="radio"
+              name="visibility"
+              checked={visibility === v}
+              onChange={() => isVisibility(v) && setVisibility(v)}
+            />
+          </label>
+        ))}
       </div>
       <div>
         weather{' '}
-        <select
-          value={weather}
-          onChange={e => isWeather(e.target.value) && setWeather(e.target.value)}
-        >
-          {Object.values(Weather).map(w => (
-            <option key={w} value={w}>{w}</option>
-          ))}
-        </select>
+        {Object.values(Weather).map(w => (
+          <label key={w}>
+            {w}{' '}
+            <input
+              type="radio"
+              name="weather"
+              checked={weather === w}
+              onChange={() => isWeather(w) && setWeather(w)}
+            />
+          </label>
+        ))}
       </div>
       <div>
         comment <input value={comment} onChange={e => setComment(e.target.value)} />
