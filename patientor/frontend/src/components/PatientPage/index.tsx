@@ -6,7 +6,7 @@ import FemaleIcon from '@mui/icons-material/Female';
 import TransgenderIcon from '@mui/icons-material/Transgender';
 
 import patientService from '../../services/patients';
-import { Gender, type Entry, type Patient } from '../../types';
+import { Gender, type Diagnosis, type Entry, type Patient } from '../../types';
 
 const GenderIcon = ({ gender }: { gender: Gender }) => {
   switch (gender) {
@@ -19,7 +19,7 @@ const GenderIcon = ({ gender }: { gender: Gender }) => {
   }
 };
 
-const PatientPage = () => {
+const PatientPage = ({ diagnoses }: { diagnoses: Diagnosis[] }) => {
   const { id } = useParams<{ id: string }>();
   const [patient, setPatient] = useState<Patient | null>(null);
 
@@ -43,7 +43,7 @@ const PatientPage = () => {
         <>
           <Typography variant="h6" sx={{ marginTop: 2 }}>entries</Typography>
           {patient.entries.map(entry => (
-            <EntryItem key={entry.id} entry={entry} />
+            <EntryItem key={entry.id} entry={entry} diagnoses={diagnoses} />
           ))}
         </>
       )}
@@ -51,19 +51,24 @@ const PatientPage = () => {
   );
 };
 
-const EntryItem = ({ entry }: { entry: Entry }) => (
-  <div>
-    <p>
-      {entry.date} <i>{entry.description}</i>
-    </p>
-    {entry.diagnosisCodes && (
-      <ul>
-        {entry.diagnosisCodes.map(code => (
-          <li key={code}>{code}</li>
-        ))}
-      </ul>
-    )}
-  </div>
-);
+const EntryItem = ({ entry, diagnoses }: { entry: Entry; diagnoses: Diagnosis[] }) => {
+  const findName = (code: string) =>
+    diagnoses.find(d => d.code === code)?.name;
+
+  return (
+    <div>
+      <p>
+        {entry.date} <i>{entry.description}</i>
+      </p>
+      {entry.diagnosisCodes && (
+        <ul>
+          {entry.diagnosisCodes.map(code => (
+            <li key={code}>{code} {findName(code)}</li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+};
 
 export default PatientPage;
