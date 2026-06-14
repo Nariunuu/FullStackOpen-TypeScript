@@ -6,7 +6,8 @@ import FemaleIcon from '@mui/icons-material/Female';
 import TransgenderIcon from '@mui/icons-material/Transgender';
 
 import patientService from '../../services/patients';
-import { Gender, type Diagnosis, type Entry, type Patient } from '../../types';
+import { Gender, type Diagnosis, type Patient } from '../../types';
+import EntryDetails from './EntryDetails';
 
 const GenderIcon = ({ gender }: { gender: Gender }) => {
   switch (gender) {
@@ -43,29 +44,9 @@ const PatientPage = ({ diagnoses }: { diagnoses: Diagnosis[] }) => {
         <>
           <Typography variant="h6" sx={{ marginTop: 2 }}>entries</Typography>
           {patient.entries.map(entry => (
-            <EntryItem key={entry.id} entry={entry} diagnoses={diagnoses} />
+            <EntryDetails key={entry.id} entry={entry} diagnoses={diagnoses} />
           ))}
         </>
-      )}
-    </div>
-  );
-};
-
-const EntryItem = ({ entry, diagnoses }: { entry: Entry; diagnoses: Diagnosis[] }) => {
-  const findName = (code: string) =>
-    diagnoses.find(d => d.code === code)?.name;
-
-  return (
-    <div>
-      <p>
-        {entry.date} <i>{entry.description}</i>
-      </p>
-      {entry.diagnosisCodes && (
-        <ul>
-          {entry.diagnosisCodes.map(code => (
-            <li key={code}>{code} {findName(code)}</li>
-          ))}
-        </ul>
       )}
     </div>
   );
