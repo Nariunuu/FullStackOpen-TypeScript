@@ -8,6 +8,7 @@ import TransgenderIcon from '@mui/icons-material/Transgender';
 import patientService from '../../services/patients';
 import { Gender, type Diagnosis, type Patient } from '../../types';
 import EntryDetails from './EntryDetails';
+import AddEntryForm from './AddEntryForm';
 
 const GenderIcon = ({ gender }: { gender: Gender }) => {
   switch (gender) {
@@ -39,6 +40,16 @@ const PatientPage = ({ diagnoses }: { diagnoses: Diagnosis[] }) => {
       <p>ssn: {patient.ssn}</p>
       <p>occupation: {patient.occupation}</p>
       <p>date of birth: {patient.dateOfBirth}</p>
+
+      <AddEntryForm
+        patientId={patient.id}
+        onAdded={entry =>
+          setPatient({
+            ...patient,
+            entries: [...(patient.entries ?? []), entry],
+          })
+        }
+      />
 
       {patient.entries && patient.entries.length > 0 && (
         <>
