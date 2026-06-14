@@ -6,7 +6,7 @@ import FemaleIcon from '@mui/icons-material/Female';
 import TransgenderIcon from '@mui/icons-material/Transgender';
 
 import patientService from '../../services/patients';
-import { Gender, type Patient } from '../../types';
+import { Gender, type Entry, type Patient } from '../../types';
 
 const GenderIcon = ({ gender }: { gender: Gender }) => {
   switch (gender) {
@@ -38,8 +38,32 @@ const PatientPage = () => {
       <p>ssn: {patient.ssn}</p>
       <p>occupation: {patient.occupation}</p>
       <p>date of birth: {patient.dateOfBirth}</p>
+
+      {patient.entries && patient.entries.length > 0 && (
+        <>
+          <Typography variant="h6" sx={{ marginTop: 2 }}>entries</Typography>
+          {patient.entries.map(entry => (
+            <EntryItem key={entry.id} entry={entry} />
+          ))}
+        </>
+      )}
     </div>
   );
 };
+
+const EntryItem = ({ entry }: { entry: Entry }) => (
+  <div>
+    <p>
+      {entry.date} <i>{entry.description}</i>
+    </p>
+    {entry.diagnosisCodes && (
+      <ul>
+        {entry.diagnosisCodes.map(code => (
+          <li key={code}>{code}</li>
+        ))}
+      </ul>
+    )}
+  </div>
+);
 
 export default PatientPage;
