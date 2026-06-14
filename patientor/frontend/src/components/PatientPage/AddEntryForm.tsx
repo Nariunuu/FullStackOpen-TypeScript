@@ -7,13 +7,18 @@ import {
   Typography,
   Alert,
   MenuItem,
+  InputLabel,
+  Select,
+  FormControl,
+  type SelectChangeEvent,
 } from "@mui/material";
 
 import patientService from "../../services/patients";
-import type { Entry } from "../../types";
+import { HealthCheckRating, type Diagnosis, type Entry } from "../../types";
 
 interface Props {
   patientId: string;
+  diagnoses: Diagnosis[];
   onAdded: (entry: Entry) => void;
 }
 
@@ -25,8 +30,18 @@ const entryTypeOptions: { value: EntryType; label: string }[] = [
   { value: "Hospital", label: "Hospital" },
 ];
 
+const ratingOptions: { value: HealthCheckRating; label: string }[] = [
+  { value: HealthCheckRating.Healthy, label: "Healthy" },
+  { value: HealthCheckRating.LowRisk, label: "Low Risk" },
+  { value: HealthCheckRating.HighRisk, label: "High Risk" },
+  { value: HealthCheckRating.CriticalRisk, label: "Critical Risk" },
+];
+
 const isEntryType = (value: string): value is EntryType =>
   entryTypeOptions.some(o => o.value === value);
+
+const isRating = (value: number): value is HealthCheckRating =>
+  ratingOptions.some(o => o.value === value);
 
 const formatError = (e: unknown): string => {
   if (axios.isAxiosError(e) && e.response) {
@@ -37,14 +52,14 @@ const formatError = (e: unknown): string => {
   return e instanceof Error ? e.message : "Unknown error";
 };
 
-const AddEntryForm = ({ patientId, onAdded }: Props) => {
+const AddEntryForm = ({ patientId, diagnoses, onAdded }: Props) => {
   const [type, setType] = useState<EntryType>("HealthCheck");
   const [date, setDate] = useState("");
   const [description, setDescription] = useState("");
   const [specialist, setSpecialist] = useState("");
-  const [codes, setCodes] = useState("");
+  const [selectedCodes, setSelectedCodes] = useState<string[]>([]);
 
-  const [rating, setRating] = useState("");
+  const [rating, setRating] = useState<HealthCheckRating>(HealthCheckRating.Healthy);
   const [dischargeDate, setDischargeDate] = useState("");
   const [dischargeCriteria, setDischargeCriteria] = useState("");
   const [employerName, setEmployerName] = useState("");
@@ -57,8 +72,8 @@ const AddEntryForm = ({ patientId, onAdded }: Props) => {
     setDate("");
     setDescription("");
     setSpecialist("");
-    setCodes("");
-    setRating("");
+    setSelectedCodes([]);
+    setRating(HealthCheckRating.Healthy);
     setDischargeDate("");
     setDischargeCriteria("");
     setEmployerName("");
@@ -67,17 +82,18 @@ const AddEntryForm = ({ patientId, onAdded }: Props) => {
     setError("");
   };
 
+  const onCodesChange = (event: SelectChangeEvent<string[]>) => {
+    const value = event.target.value;
+    setSelectedCodes(typeof value === "string" ? value.split(",") : value);
+  };
+
   const buildEntry = (): unknown => {
-    const diagnosisCodes = codes
-      .split(",")
-      .map(c => c.trim())
-      .filter(c => c.length > 0);
-    const codesField = diagnosisCodes.length > 0 ? { diagnosisCodes } : {};
+    const codesField = selectedCodes.length > 0 ? { diagnosisCodes: selectedCodes } : {};
     const base = { date, description, specialist, ...codesField };
 
     switch (type) {
       case "HealthCheck":
-        return { ...base, type, healthCheckRating: Number(rating) };
+        return { ...base, type, healthCheckRating: rating };
       case "Hospital":
         return {
           ...base,
@@ -134,21 +150,38 @@ const AddEntryForm = ({ patientId, onAdded }: Props) => {
         ))}
       </TextField>
 
-      <TextField label="Date" required fullWidth margin="dense"
-        value={date} onChange={e => setDate(e.target.value)} />
+      <TextField
+        label="Date" type="date" required fullWidth margin="dense"
+        InputLabelProps={{ shrink: true }}
+        value={date} onChange={e => setDate(e.target.value)}
+      />
       <TextField label="Description" required fullWidth margin="dense"
         value={description} onChange={e => setDescription(e.target.value)} />
       <TextField label="Specialist" required fullWidth margin="dense"
         value={specialist} onChange={e => setSpecialist(e.target.value)} />
 
       {type === "HealthCheck" && (
-        <TextField label="Health Check Rating (0-3)" required fullWidth margin="dense"
-          value={rating} onChange={e => setRating(e.target.value)} />
+        <TextField
+          select
+          label="Health Check Rating"
+          fullWidth
+          margin="dense"
+          value={rating}
+          onChange={e => {
+            const n = Number(e.target.value);
+            if (isRating(n)) setRating(n);
+          }}
+        >
+          {ratingOptions.map(o => (
+            <MenuItem key={o.value} value={o.value}>{o.label}</MenuItem>
+          ))}
+        </TextField>
       )}
 
       {type === "Hospital" && (
         <>
-          <TextField label="Discharge Date" required fullWidth margin="dense"
+          <TextField label="Discharge Date" type="date" required fullWidth margin="dense"
+            InputLabelProps={{ shrink: true }}
             value={dischargeDate} onChange={e => setDischargeDate(e.target.value)} />
           <TextField label="Discharge Criteria" required fullWidth margin="dense"
             value={dischargeCriteria} onChange={e => setDischargeCriteria(e.target.value)} />
@@ -159,15 +192,31 @@ const AddEntryForm = ({ patientId, onAdded }: Props) => {
         <>
           <TextField label="Employer Name" required fullWidth margin="dense"
             value={employerName} onChange={e => setEmployerName(e.target.value)} />
-          <TextField label="Sick Leave Start" fullWidth margin="dense"
+          <TextField label="Sick Leave Start" type="date" fullWidth margin="dense"
+            InputLabelProps={{ shrink: true }}
             value={sickStart} onChange={e => setSickStart(e.target.value)} />
-          <TextField label="Sick Leave End" fullWidth margin="dense"
+          <TextField label="Sick Leave End" type="date" fullWidth margin="dense"
+            InputLabelProps={{ shrink: true }}
             value={sickEnd} onChange={e => setSickEnd(e.target.value)} />
         </>
       )}
 
-      <TextField label="Diagnosis Codes (comma-separated)" fullWidth margin="dense"
-        value={codes} onChange={e => setCodes(e.target.value)} />
+      <FormControl fullWidth margin="dense">
+        <InputLabel id="diagnosis-codes-label">Diagnosis Codes</InputLabel>
+        <Select
+          labelId="diagnosis-codes-label"
+          multiple
+          value={selectedCodes}
+          onChange={onCodesChange}
+          label="Diagnosis Codes"
+        >
+          {diagnoses.map(d => (
+            <MenuItem key={d.code} value={d.code}>
+              {d.code} — {d.name}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
 
       <Box sx={{ marginTop: 1, display: "flex", gap: 1 }}>
         <Button type="submit" variant="contained">add</Button>

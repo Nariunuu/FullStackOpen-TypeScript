@@ -43,6 +43,7 @@ const PatientPage = ({ diagnoses }: { diagnoses: Diagnosis[] }) => {
 
       <AddEntryForm
         patientId={patient.id}
+        diagnoses={diagnoses}
         onAdded={entry =>
           setPatient({
             ...patient,
