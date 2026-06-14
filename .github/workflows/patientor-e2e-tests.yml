@@ -2,11 +2,12 @@ name: Patientor E2E Tests
 
 on:
   push:
-    branches: [ xmain, xmaster ]
+    branches: [ main, master ]
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
     - name: Checkout code
@@ -16,10 +17,15 @@ jobs:
       uses: actions/setup-node@v5
       with:
         node-version: '24'
+        cache: 'npm'
+        cache-dependency-path: |
+          patientor/backend/package-lock.json
+          patientor/frontend/package-lock.json
+          patientor-tests/package-lock.json
 
     - name: Install patientor backend dependencies
       working-directory: ./patientor/backend
-      run: npm install --legacy-peer-deps
+      run: npm ci --legacy-peer-deps
 
     - name: Start patientor backend
       working-directory: ./patientor/backend
@@ -27,7 +33,7 @@ jobs:
 
     - name: Install patientor frontend dependencies
       working-directory: ./patientor/frontend
-      run: npm install --legacy-peer-deps
+      run: npm ci --legacy-peer-deps
 
     - name: Build patientor frontend
       working-directory: ./patientor/frontend
@@ -39,11 +45,17 @@ jobs:
 
     - name: Install e2e test dependencies
       working-directory: ./patientor-tests
-      run: npm install 
+      run: npm ci
+
+    - name: Cache Playwright browsers
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/ms-playwright
+        key: playwright-${{ runner.os }}-${{ hashFiles('patientor-tests/package-lock.json') }}
 
     - name: Install Playwright browsers
       working-directory: ./patientor-tests
-      run: npx playwright install --with-deps chromium
+      run: npx playwright install chromium
 
     - name: Wait for servers to start
       run: npx wait-on http://localhost:3001/api/ping http://localhost:5173 --timeout 60000

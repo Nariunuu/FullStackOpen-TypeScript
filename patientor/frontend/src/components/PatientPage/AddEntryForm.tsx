@@ -20,6 +20,7 @@ interface Props {
   patientId: string;
   diagnoses: Diagnosis[];
   onAdded: (entry: Entry) => void;
+  onCancel: () => void;
 }
 
 type EntryType = "HealthCheck" | "Hospital" | "OccupationalHealthcare";
@@ -52,7 +53,7 @@ const formatError = (e: unknown): string => {
   return e instanceof Error ? e.message : "Unknown error";
 };
 
-const AddEntryForm = ({ patientId, diagnoses, onAdded }: Props) => {
+const AddEntryForm = ({ patientId, diagnoses, onAdded, onCancel }: Props) => {
   const [type, setType] = useState<EntryType>("HealthCheck");
   const [date, setDate] = useState("");
   const [description, setDescription] = useState("");
@@ -219,8 +220,8 @@ const AddEntryForm = ({ patientId, diagnoses, onAdded }: Props) => {
       </FormControl>
 
       <Box sx={{ marginTop: 1, display: "flex", gap: 1 }}>
-        <Button type="submit" variant="contained">add</Button>
-        <Button variant="outlined" type="button" onClick={reset}>cancel</Button>
+        <Button type="submit" variant="contained">Add</Button>
+        <Button variant="outlined" type="button" onClick={() => { reset(); onCancel(); }}>Cancel</Button>
       </Box>
     </Box>
   );

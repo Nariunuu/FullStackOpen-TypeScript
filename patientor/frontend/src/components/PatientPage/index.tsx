@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Typography } from '@mui/material';
+import { Button, Typography } from '@mui/material';
 import MaleIcon from '@mui/icons-material/Male';
 import FemaleIcon from '@mui/icons-material/Female';
 import TransgenderIcon from '@mui/icons-material/Transgender';
@@ -24,6 +24,7 @@ const GenderIcon = ({ gender }: { gender: Gender }) => {
 const PatientPage = ({ diagnoses }: { diagnoses: Diagnosis[] }) => {
   const { id } = useParams<{ id: string }>();
   const [patient, setPatient] = useState<Patient | null>(null);
+  const [formOpen, setFormOpen] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -41,16 +42,28 @@ const PatientPage = ({ diagnoses }: { diagnoses: Diagnosis[] }) => {
       <p>occupation: {patient.occupation}</p>
       <p>date of birth: {patient.dateOfBirth}</p>
 
-      <AddEntryForm
-        patientId={patient.id}
-        diagnoses={diagnoses}
-        onAdded={entry =>
-          setPatient({
-            ...patient,
-            entries: [...(patient.entries ?? []), entry],
-          })
-        }
-      />
+      {formOpen ? (
+        <AddEntryForm
+          patientId={patient.id}
+          diagnoses={diagnoses}
+          onAdded={entry => {
+            setPatient({
+              ...patient,
+              entries: [...(patient.entries ?? []), entry],
+            });
+            setFormOpen(false);
+          }}
+          onCancel={() => setFormOpen(false)}
+        />
+      ) : (
+        <Button
+          variant="contained"
+          sx={{ marginTop: 2 }}
+          onClick={() => setFormOpen(true)}
+        >
+          Add New Entry
+        </Button>
+      )}
 
       {patient.entries && patient.entries.length > 0 && (
         <>
