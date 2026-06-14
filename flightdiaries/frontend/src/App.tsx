@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import AddDiaryForm from './AddDiaryForm';
 import { getAll } from './services/diaries';
 import type { NonSensitiveDiaryEntry } from './types';
 
@@ -23,6 +24,7 @@ const App = () => {
 
   return (
     <div>
+      <AddDiaryForm onAdded={entry => setDiaries(diaries.concat(entry))} />
       <h1>Diary entries</h1>
       <DiaryList diaries={diaries} />
     </div>
