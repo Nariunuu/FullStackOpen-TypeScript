@@ -13,6 +13,7 @@ export default tseslint.config(
     },
     rules: {
       semi: ['error', 'always'],
+      '@typescript-eslint/consistent-type-imports': 'error',
     },
   },
   {
